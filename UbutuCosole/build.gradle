@@ -17,6 +17,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	// https://mvnrepository.com/artifact/org.webjars/bootstrap
+	compile group: 'org.webjars', name: 'bootstrap', version: '4.5.3'
 }
 
 test {
