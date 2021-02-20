@@ -1,7 +1,6 @@
-package com.prims.Controller;
+package com.prims.Controllers;
 
-import javax.servlet.http.HttpSession;
-
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,7 +10,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -23,7 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.prims.Repository.FileData;
@@ -32,15 +36,27 @@ import com.prims.Service.FileServices;
 import com.prims.Service.SystemUsageServices;
 
 @Controller
-public class DashboardController {
+public class DashBoardController {
 
 	private final FileServices fileServices;
 	private final SystemUsageServices SystemServices;
 
 	@Autowired
-	public DashboardController(FileServices fileServices, SystemUsageServices SystemServices) {
+	public DashBoardController(FileServices fileServices, SystemUsageServices SystemServices) {
 		this.fileServices = fileServices;
 		this.SystemServices = SystemServices;
+	}
+	
+	@RequestMapping("/dashboard/upload")
+	public String fileupload(HttpServletRequest request, @RequestBody List<MultipartFile> files, HttpSession Session){
+	    try{
+	        for(int i=0;i<files.size();i++){
+	            files.get(i).transferTo(new File(Session.getAttribute("CurrentPath") + "\\" + files.get(i).getOriginalFilename()));
+	        }
+	    }catch (IllegalStateException | IOException e){
+	        e.printStackTrace();
+	    }
+	    return "redirect:/dashboard/filesystem";
 	}
 	
 	@GetMapping("/dashboard/download")
@@ -65,7 +81,7 @@ public class DashboardController {
 		String newDir = (String) Session.getAttribute("CurrentPath") + "\\" + Path;
 		Session.setAttribute("CurrentPath",newDir);
 		
-		return "redirect:/dashboard/dashboard";
+		return "redirect:/dashboard/filesystem";
 		
 	}
 	
@@ -74,7 +90,7 @@ public class DashboardController {
 		
 		Session.setAttribute("CurrentPath",((User) Session.getAttribute("User")).getDirectory());
 		
-		return "redirect:/dashboard/dashboard";
+		return "redirect:/dashboard/filesystem";
 		
 	}
 	
@@ -86,12 +102,12 @@ public class DashboardController {
 		newDir = newDir.replace("\\" + tempDir[tempDir.length-1], "") ;
 		Session.setAttribute("CurrentPath",newDir);
 		
-		return "redirect:/dashboard/dashboard";
+		return "redirect:/dashboard/filesystem";
 		
 	}
-
-	@GetMapping("/dashboard/dashboard")
-	public ModelAndView DashHome(ModelAndView mv, HttpSession Session) {
+	
+	@GetMapping("/dashboard/filesystem")
+	public ModelAndView DashFileSystem(ModelAndView mv, HttpSession Session) {
 		
 		List<FileData> FileLists;
 		
@@ -114,25 +130,6 @@ public class DashboardController {
 		
 		Collections.sort(FileLists);
 		
-		
-		
-		
-		String[] disk = SystemServices.getDiskSpace();
-		Map<String, Long> cpu = new HashMap<String, Long>();
-		cpu.put("cpu", SystemServices.getCPULoad());
-		
-		Long UsedDisk = (long) (Long.parseLong(disk[0]) - Long.parseLong(disk[1]));
-		
-		Map<String, Double> usage = new HashMap<String, Double>();
-		usage.put("TotalRam", ((double) SystemServices.getTotalRam() - (double) SystemServices.getRamLoad()) / 1073741824);
-		usage.put("UsedRam", (double) SystemServices.getRamLoad() / 1073741824);
-		usage.put("UsableDisk",Double.parseDouble(disk[1]) / 1024);
-		usage.put("UsedDisk",((double) UsedDisk / 1024));
-		
-		
-		mv.addObject("cpuUsage", cpu);
-		mv.addObject("usage", usage);
-		
 		mv.addObject("FileList", FileLists);
 		String Temp[] = Path.split("\\\\");
 		mv.addObject("CurrentPath", Temp[Temp.length-1]);
@@ -141,9 +138,64 @@ public class DashboardController {
 		else
 			mv.addObject("isHome", 0);
 		
-		mv.setViewName("dashboard/dashboard");
+		mv.setViewName("filesystem");
+
+		return mv;
+	}
+	
+	@GetMapping("/dashboard")
+	public String DashHome() {
+
+		return "redirect:/dashboard/usage";
+	}
+	
+	@GetMapping("/dashboard/home")
+	public ModelAndView DashHome2(ModelAndView mv, HttpSession Session) {
+		
+
+		mv.setViewName("charts");
 
 		return mv;
 	}
 
+	@GetMapping("/dashboard/usage")
+	public ModelAndView DashUsage(ModelAndView mv, HttpSession Session) {
+		
+
+		User user = (User) Session.getAttribute("User");
+		
+		String[] disk = SystemServices.getDiskSpace();
+		Map<String, Integer> cpu = new HashMap<String, Integer>();
+		int cpuLoad = SystemServices.getCPULoad();
+		cpu.put("cpu", cpuLoad);
+		
+		Long UsedDisk = (long) (Long.parseLong(disk[0]) - Long.parseLong(disk[1]));
+		
+		Double UsableRam = ((double) SystemServices.getTotalRam() - (double) SystemServices.getRamLoad()) / 1073741824;
+		Double UsedRam = (double) SystemServices.getRamLoad() / 1073741824;
+		Double UsableDisk = Double.parseDouble(disk[1]) / 1024;
+		Double UsingDisk = ((double) UsedDisk / 1024);
+		
+		Map<String, Double> usage = new HashMap<String, Double>();
+		usage.put("UsableRam", UsableRam);
+		usage.put("UsedRam", UsedRam);
+		usage.put("UsableDisk", UsableDisk);
+		usage.put("UsedDisk", UsingDisk);
+		
+		Map<String, Integer> Percentage = new HashMap<String, Integer>();
+		Percentage.put("cpu", cpuLoad);
+		Percentage.put("ram", Integer.parseInt(String.valueOf(Math.round((UsedRam / (UsedRam + UsableRam)) * 100))));
+		Percentage.put("disk", Integer.parseInt(String.valueOf(Math.round((UsingDisk / (UsingDisk + UsableDisk)) * 100))));
+		
+		
+		mv.addObject("cpuUsage", cpu);
+		mv.addObject("usage", usage);
+		mv.addObject("percentage", Percentage);
+		
+		
+		mv.setViewName("usage");
+
+		return mv;
+	}
+	
 }

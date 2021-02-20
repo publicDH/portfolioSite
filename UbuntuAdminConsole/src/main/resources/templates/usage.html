@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+  </head>
+
+  <div layout:fragment="content" class="d-flex align-items-stretch">
+  
+  
+<script>
+    $(document).ready(function() {
+        var ctx = $("#cpuUsage");
+        var usage = Number([[${cpuUsage.cpu}]]);
+        var myLineChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Used", "Space"],
+                datasets: [{
+                    data: [usage, (100 - usage)],
+                    backgroundColor: ["rgba(34, 116, 28, 0.5)", "rgba(234, 234, 234, 0.5)"]
+                }]
+            },
+            options: {
+                cutoutPercentage: 90,
+                legend: {
+                    display: false
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        var ctx = $("#ramUsage");
+        var usable = parseFloat([[${usage.UsableRam}]]);
+        var used = parseFloat([[${usage.UsedRam}]]);
+        var myLineChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Used", "Space"],
+                datasets: [{
+                    data: [used, usable],
+                    backgroundColor: ["rgba(34, 116, 28, 0.5)", "rgba(234, 234, 234, 0.5)"]
+                }]
+            },
+            options: {
+                cutoutPercentage: 90,
+                legend: {
+                    display: false
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        var ctx = $("#diskUsage");
+        var usable = parseFloat([[${usage.UsableDisk}]]);
+        var used = parseFloat([[${usage.UsedDisk}]]);
+        var myLineChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Used", "Space"],
+                datasets: [{
+                    data: [used, usable],
+                    backgroundColor: ["rgba(34, 116, 28, 0.5)", "rgba(234, 234, 234, 0.5)"]
+                }]
+            },
+            options: {
+                cutoutPercentage: 90,
+                legend: {
+                    display: false
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+$(document).ready(function() {
+   var PIECHART = $('#pieChart10');
+   var myPieChart = new Chart(PIECHART, {
+       type: 'doughnut',
+       options: {
+           cutoutPercentage: 90,
+           legend: {
+               display: false
+           }
+       },
+       data: {
+           labels: [
+               "First",
+               "Second",
+               "Third"
+           ],
+           datasets: [
+               {
+                   data: [250, 200],
+                   borderWidth: [0, 0],
+                   backgroundColor: [
+                       green,
+                       "#eee",
+                   ],
+                   hoverBackgroundColor: [
+                       green,
+                       "#eee",
+                   ]
+               }]
+       }
+   });
+});
+</script>
+  
+      <div id="sidebar" class="sidebar py-3">
+        <div class="text-gray-400 text-uppercase px-3 px-lg-4 py-4 font-weight-bold small headings-font-family">MAIN</div>
+        <ul class="sidebar-menu list-unstyled">
+              <li class="sidebar-list-item"><a href="index" class="sidebar-link text-muted active"><i class="o-home-1 mr-3 text-gray"></i><span>Home</span></a></li>
+              <li class="sidebar-list-item"><a href="usage" class="sidebar-link text-muted"><i class="o-sales-up-1 mr-3 text-gray"></i><span>Usage</span></a></li>
+              <li class="sidebar-list-item"><a href="filesystem" class="sidebar-link text-muted"><i class="o-repository-1 mr-3 text-gray"></i><span>Files</span></a></li>
+              <li class="sidebar-list-item"><a href="forms" class="sidebar-link text-muted"><i class="o-survey-1 mr-3 text-gray"></i><span>Forms</span></a></li>
+              <li class="sidebar-list-item"><a href="login" class="sidebar-link text-muted"><i class="o-exit-1 mr-3 text-gray"></i><span>Login</span></a></li>
+        </ul>
+      </div>
+      <div class="page-holder w-100 d-flex flex-wrap">
+        <div class="container-fluid px-xl-5">
+          <section class="py-5">
+            
+          </section>
+          <section>
+            <div class="row">
+              <div class="col-lg-5 mb-4 mb-lg-0">
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="row align-items-center mb-3 flex-row">
+                      <div class="col-lg-5">
+                        <h2 class="mb-0 d-flex align-items-center"><span th:text="${percentage.cpu} + '%'"></span><span class="dot bg-violet d-inline-block ml-3"></span></h2><span class="text-muted text-uppercase small">CPU Usage</span>
+                        <hr><small class="text-muted"></small>
+                      </div>
+                      <div class="col-lg-7">
+                        <canvas id="cpuUsage"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="row align-items-center mb-3 flex-row">
+                      <div class="col-lg-5">
+                        <h2 class="mb-0 d-flex align-items-center"><span th:text="${percentage.ram} + '%'"></span><span class="dot bg-violet d-inline-block ml-3"></span></h2><span class="text-muted text-uppercase small">RAM Usage</span>
+                        <hr><small class="text-muted"></small>
+                      </div>
+                      <div class="col-lg-7">
+                        <canvas id="ramUsage"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-5 mb-4 mb-lg-0">
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="row align-items-center mb-3 flex-row">
+                      <div class="col-lg-5">
+                        <h2 class="mb-0 d-flex align-items-center"><span th:text="${percentage.disk} + '%'"></span><span class="dot bg-violet d-inline-block ml-3"></span></h2><span class="text-muted text-uppercase small">DISK Usage</span>
+                        <hr><small class="text-muted"></small>
+                      </div>
+                      <div class="col-lg-7">
+                        <canvas id="diskUsage"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="py-5">
+            
+          </section>
+        </div>
+      </div>
+    </div>
+</html>
