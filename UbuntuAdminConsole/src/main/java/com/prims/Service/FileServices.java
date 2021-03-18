@@ -12,9 +12,9 @@ import com.prims.Repository.FileData;
 @Service
 public class FileServices {
 
-	public static String MasterDirectory = "C:\\Users\\JayPrims\\Downloads\\test";
-	public static String DirectorySplit = "\\";
-	public static String DirectorySplitDouble = "\\\\";
+	public static String MasterDirectory = "/home/ubuntu/projectTest";
+	public static String DirectorySplit = "/";
+	public static String DirectorySplitDouble = "/";
 
 	public String getDirectorySplitDouble() {
 		return DirectorySplitDouble;
