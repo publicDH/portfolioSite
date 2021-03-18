@@ -35,11 +35,13 @@ public class SystemUsageServices {
 
 			      .getOperatingSystemMXBean();
 
+		int cpuLoad = 0;
 
-			    while (osbean.getCpuLoad() * 100 == 0) {
+			    while (cpuLoad * 100 == 0) {
+			    	cpuLoad = (int) osbean.getCpuLoad();
 			    }
 			    
-			    return (int)(osbean.getCpuLoad() * 100);
+			    return (int)(cpuLoad * 100);
 	}
 	
 	public Long getRamLoad() {
