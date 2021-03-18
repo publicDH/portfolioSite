@@ -47,11 +47,53 @@ public class DashBoardController {
 		this.SystemServices = SystemServices;
 	}
 	
+	@GetMapping("/dashboard/shutdownSystem")
+	public void shutdownSystem(HttpSession Session) throws IOException {
+		
+		User user = (User) Session.getAttribute("User");
+		if(user.getIsAdmin() == true) {
+			
+			String shutdownCommand = null;
+		    String operatingSystem = System.getProperty("os.name");
+
+		    if (operatingSystem.startsWith("Win")) {
+		    	  shutdownCommand = "shutdown.exe -s -t 0";
+		    	} else if (operatingSystem.startsWith("Linux") || operatingSystem.startsWith("Mac")) {
+		    	  shutdownCommand = "shutdown -h now";
+		    	} else {
+		    	  System.err.println("Shutdown unsupported operating system ...");
+		    	}
+
+		    Runtime.getRuntime().exec(shutdownCommand);
+		}
+	}
+	
+	@GetMapping("/dashboard/restartSystem")
+	public void restartSystem(HttpSession Session) throws IOException {
+		
+		User user = (User) Session.getAttribute("User");
+		if(user.getIsAdmin() == true) {
+			
+			String shutdownCommand = null;
+		    String operatingSystem = System.getProperty("os.name");
+
+		    if (operatingSystem.startsWith("Win")) {
+		    	  shutdownCommand = "shutdown.exe -r -t 0";
+		    	} else if (operatingSystem.startsWith("Linux") || operatingSystem.startsWith("Mac")) {
+		    	  shutdownCommand = "shutdown -r now";
+		    	} else {
+		    	  System.err.println("Shutdown unsupported operating system ...");
+		    	}
+
+		    Runtime.getRuntime().exec(shutdownCommand);
+		}
+	}
+	
 	@RequestMapping("/dashboard/upload")
 	public String fileupload(HttpServletRequest request, @RequestBody List<MultipartFile> files, HttpSession Session){
 	    try{
 	        for(int i=0;i<files.size();i++){
-	            files.get(i).transferTo(new File(Session.getAttribute("CurrentPath") + "\\" + files.get(i).getOriginalFilename()));
+	            files.get(i).transferTo(new File(Session.getAttribute("CurrentPath") + fileServices.getDirectorySplit() + files.get(i).getOriginalFilename()));
 	        }
 	    }catch (IllegalStateException | IOException e){
 	        e.printStackTrace();
@@ -59,9 +101,17 @@ public class DashBoardController {
 	    return "redirect:/dashboard/filesystem";
 	}
 	
+	@GetMapping("/dashboard/deletefile")
+	public String fileDelete(@RequestParam(value="fileName")String fileName, HttpSession Session) throws IOException {
+		String path = Session.getAttribute("CurrentPath") + fileServices.getDirectorySplit() + fileName;
+		fileServices.deleteFile(path);
+		
+	    return "redirect:/dashboard/filesystem";
+	}
+	
 	@GetMapping("/dashboard/download")
 	public ResponseEntity<Resource> download(@RequestParam(value="fileName")String fileName, HttpSession Session) throws IOException {
-		Path path = Paths.get(Session.getAttribute("CurrentPath") + "\\" + fileName);
+		Path path = Paths.get(Session.getAttribute("CurrentPath") + fileServices.getDirectorySplit() + fileName);
 		String contentType = Files.probeContentType(path);
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -78,7 +128,7 @@ public class DashBoardController {
 	@GetMapping("/dashboard/redirect")
 	public String DashRedirect(@RequestParam(value="path")String Path, HttpSession Session) {
 		
-		String newDir = (String) Session.getAttribute("CurrentPath") + "\\" + Path;
+		String newDir = (String) Session.getAttribute("CurrentPath") + fileServices.getDirectorySplit() + Path;
 		Session.setAttribute("CurrentPath",newDir);
 		
 		return "redirect:/dashboard/filesystem";
@@ -98,8 +148,8 @@ public class DashBoardController {
 	public String DashRedirectBack(HttpSession Session) {
 		
 		String newDir = (String) Session.getAttribute("CurrentPath");
-		String[] tempDir = newDir.split("\\\\");
-		newDir = newDir.replace("\\" + tempDir[tempDir.length-1], "") ;
+		String[] tempDir = newDir.split(fileServices.getDirectorySplitDouble());
+		newDir = newDir.replace(fileServices.getDirectorySplit() + tempDir[tempDir.length-1], "") ;
 		Session.setAttribute("CurrentPath",newDir);
 		
 		return "redirect:/dashboard/filesystem";
@@ -131,12 +181,14 @@ public class DashBoardController {
 		Collections.sort(FileLists);
 		
 		mv.addObject("FileList", FileLists);
-		String Temp[] = Path.split("\\\\");
+		String Temp[] = Path.split(fileServices.getDirectorySplitDouble());
 		mv.addObject("CurrentPath", Temp[Temp.length-1]);
 		if(user.getDirectory().equals(Path))
 			mv.addObject("isHome", 1);
 		else
 			mv.addObject("isHome", 0);
+		
+		mv.addObject("isAdmin", user.getIsAdmin());
 		
 		mv.setViewName("filesystem");
 
@@ -144,16 +196,28 @@ public class DashBoardController {
 	}
 	
 	@GetMapping("/dashboard")
-	public String DashHome() {
+	public String DashHome(HttpSession Session) {
+		
+		User user = (User) Session.getAttribute("User");
+		
+		if(user.getIsAdmin() == true) {
+			
+			return "redirect:/dashboard/home";
+			
+		}else {
 
-		return "redirect:/dashboard/usage";
+			return "redirect:/dashboard/filesystem";
+		
+		}
 	}
 	
 	@GetMapping("/dashboard/home")
 	public ModelAndView DashHome2(ModelAndView mv, HttpSession Session) {
 		
+		User user = (User) Session.getAttribute("User");
+		mv.addObject("isAdmin", user.getIsAdmin());
 
-		mv.setViewName("charts");
+		mv.setViewName("home");
 
 		return mv;
 	}
@@ -191,6 +255,7 @@ public class DashBoardController {
 		mv.addObject("cpuUsage", cpu);
 		mv.addObject("usage", usage);
 		mv.addObject("percentage", Percentage);
+		mv.addObject("isAdmin", user.getIsAdmin());
 		
 		
 		mv.setViewName("usage");

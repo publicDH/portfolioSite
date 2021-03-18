@@ -31,16 +31,28 @@ public class UserService {
 		
 	}
 	
+	public Optional<String> getUserDirectoryById(String id){
+		User data = userDBRepository.findById(id).orElse(null);
+		if(data != null) {
+			return Optional.ofNullable(data.getDirectory());
+		}else
+			return null;	
+	}
+	
 	public Optional<User> joinUser(User user) {
 		validateDuplicateUser(user);
 		userDBRepository.insert(user);
 		return Optional.ofNullable(user);
 	}
 	
+	public void deleteUserById(String id) {
+		userDBRepository.deleteById(id);
+	}
+	
 	private void validateDuplicateUser(User user) {
 		userDBRepository.findById(user.getId())
 		.ifPresent(m -> {
-			throw new IllegalStateException("�̹� �����ϴ� �����Դϴ�.");
+			throw new IllegalStateException("");
 		});
 	}
 	

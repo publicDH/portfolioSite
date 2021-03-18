@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+  <head>
+  </head>
+
+  <div layout:fragment="content" class="d-flex align-items-stretch">
+      <div id="sidebar" class="sidebar py-3">
+        <div class="text-gray-400 text-uppercase px-3 px-lg-4 py-4 font-weight-bold small headings-font-family">MAIN</div>
+        <ul class="sidebar-menu list-unstyled">
+        <th th:if="${isAdmin} == true">
+              <li class="sidebar-list-item"><a href="home" class="sidebar-link text-muted active"><i class="o-home-1 mr-3 text-gray"></i><span>Home</span></a></li>
+              <li class="sidebar-list-item"><a href="usage" class="sidebar-link text-muted"><i class="o-sales-up-1 mr-3 text-gray"></i><span>Usage</span></a></li>
+        </th>
+        	  <li class="sidebar-list-item"><a href="filesystem" class="sidebar-link text-muted"><i class="o-repository-1 mr-3 text-gray"></i><span>Files</span></a></li>
+              <li class="sidebar-list-item"><a href="/logout" class="sidebar-link text-muted"><i class="o-exit-1 mr-3 text-gray"></i><span>LogOut</span></a></li>
+        </ul>
+      </div>
+      <div class="page-holder w-100 d-flex flex-wrap">
+        <div class="container-fluid px-xl-5">
+          <section class="py-5">
+            
+          </section>
+
+			<div class="col-lg-4 mb-5">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="h6 text-uppercase mb-0">사용자 관리</h3>
+                  </div>
+                  <div class="card-body">
+                    <button type="button" data-toggle="modal" data-target="#userAddModal" class="btn btn-primary">추가</button>
+                    <!-- Modal-->
+                    <div id="userAddModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+                      <div role="document" class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 id="exampleModalLabel" class="modal-title">사용자 추가</h4>
+                            <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                          </div>
+                          <div class="modal-body">
+                            <p></p>
+                            <form id="createForm" action="/createUser" method="post">
+                              <div class="form-group">
+                                <label>ID</label>
+                                <input type="text" placeholder="ID" name="id" class="form-control">
+                              </div>
+                              <div class="form-group">       
+                                <label>Password</label>
+                                <input type="password" placeholder="Password" name="Password" class="form-control">
+                              </div>
+                              <div class="form-group">       
+                                <input type="submit" value="추가하기" class="btn btn-primary">
+                              </div>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" data-dismiss="modal" class="btn btn-secondary">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button type="button" data-toggle="modal" data-target="#userDeleteModal" class="btn btn-primary">삭제</button>
+                    <!-- Modal-->
+                    <div id="userDeleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+                      <div role="document" class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 id="exampleModalLabel" class="modal-title">사용자 삭제</h4>
+                            <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                          </div>
+                          <div class="modal-body">
+                            <p></p>
+                            <form id="createForm" action="/deleteUser" method="post">
+                              <div class="form-group">
+                                <label>ID</label>
+                                <input type="text" placeholder="ID" name="id" class="form-control">
+                              </div>
+                              <div class="form-group">       
+                                <input type="submit" value="삭제하기" class="btn btn-primary">
+                              </div>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" data-dismiss="modal" class="btn btn-secondary">Close</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-lg-4 mb-5">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="h6 text-uppercase mb-0">시스템 관리</h3>
+                  </div>
+                  <div class="card-body">
+                    
+                    <button type="button" onclick="location.href='redirect/home'" class="btn btn-primary">재시작</button>
+                    <button type="button" onclick="location.href='redirect/home'" class="btn btn-primary">종료</button>
+                    
+                  </div>
+                </div>
+              </div>
+
+          
+          <section class="py-5">
+            
+          </section>
+        </div>
+      </div>
+    </div>
+</html>
